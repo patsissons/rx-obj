@@ -208,7 +208,7 @@ gulp.task('clean:tsc', () => {
 gulp.task('typings', [ 'typings:install' ]);
 
 gulp.task('typings:install', () => {
-  gulp
+  return gulp
     .src(path.join(__dirname, config.files.typings))
     .pipe(typings());
 });
