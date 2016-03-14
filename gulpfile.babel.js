@@ -33,7 +33,6 @@ const config = {
     release: 'release',
     test: 'test',
     typings: 'typings',
-    watch: 'watch',
   },
   files: {
     typings: 'typings.json',
@@ -70,6 +69,11 @@ gulp.task('default', [ 'webpack' ]);
 // Default test task
 gulp.task('test', [ 'mocha' ]);
 
+// npm test task
+gulp.task('npm:test', (done) => {
+  runSequence('lint', 'webpack:test', 'mocha:run', 'dist:all', done);
+});
+
 gulp.task('config', () => {
   util.log('Gulp Config:', JSON.stringify(config, null, 2));
 });
@@ -101,6 +105,9 @@ Tasks:
   ${ util.colors.cyan('gulp typings:ensure') } will run ${ util.colors.cyan('typings:install') } if ${ util.colors.magenta(config.dirs.typings) } is missing
 
   ${ util.colors.cyan('gulp tsconfig:glob') } will expand ${ util.colors.yellow('filesGlob') } in ${ util.colors.magenta('tsconfig.json') }
+
+  ${ util.colors.cyan('gulp lint') } will lint the source files with ${ util.colors.yellow('eslint') } and ${ util.colors.yellow('tslint') }
+       ${ [ 'es', 'ts', 'all' ].map((x) => util.colors.cyan(`lint:${ x }`)).join(', ') }
 
   ${ util.colors.cyan('gulp webpack') } will build the ${ util.colors.yellow('debug') } bundle using webpack (alias for ${ util.colors.cyan('gulp webpack:debug') })
        ${ [ 'debug', 'release', 'release:min', 'test', 'all' ].map((x) => util.colors.cyan(`webpack:${ x }`)).join(', ') }
@@ -255,24 +262,25 @@ gulp.task('lint', [ 'lint:all' ]);
 gulp.task('lint:all', [ 'lint:ts', 'lint:es' ]);
 
 gulp.task('lint:es', () => {
-  gulp
+  return gulp
     .src([
       path.join(config.dirs.src, '**', '*.js'),
       path.join(config.dirs.test, '**', '*.js'),
       path.join(__dirname, '*.js'),
     ])
     .pipe(eslint())
-    .pipe(eslint.format());
+    .pipe(eslint.format())
+    .pipe(eslint.failOnError());
 });
 
 gulp.task('lint:ts', () => {
-  gulp
+  return gulp
     .src([
       path.join(config.dirs.src, '**', '*.ts'),
       path.join(config.dirs.test, '**', '*.ts'),
     ])
     .pipe(tslint())
-    .pipe(tslint.report('verbose', { emitError: false, summarizeFailureOutput: true }));
+    .pipe(tslint.report('verbose', { emitError: true, summarizeFailureOutput: true }));
 });
 
 // webpack Functions
@@ -384,8 +392,7 @@ function webpackBuild(build, webpackConfig, callback) {
     }
 
     onWebpackComplete(build, err, stats);
-  }).on('error', () => null)
-  .pipe(gulp.dest(webpackConfig.output.path));
+  });
 }
 
 // webpack Tasks
@@ -397,19 +404,31 @@ gulp.task('webpack:all', (done) => {
 });
 
 gulp.task('webpack:debug', [ 'tsconfig:glob' ], () => {
-  return webpackBuild(config.builds.debug, getWebpackConfig(config.builds.debug));
+  const webpackConfig = getWebpackConfig(config.builds.debug);
+
+  return webpackBuild(config.builds.debug, webpackConfig)
+    .pipe(gulp.dest(webpackConfig.output.path));
 });
 
 gulp.task('webpack:release', [ 'tsconfig:glob' ], () => {
-  return webpackBuild(config.builds.release, getWebpackConfig(config.builds.release));
+  const webpackConfig = getWebpackConfig(config.builds.release);
+
+  return webpackBuild(config.builds.release, webpackConfig)
+    .pipe(gulp.dest(webpackConfig.output.path));
 });
 
 gulp.task('webpack:release:min', [ 'tsconfig:glob' ], () => {
-  return webpackBuild(config.builds.release, getWebpackConfig(config.builds.release, true));
+  const webpackConfig = getWebpackConfig(config.builds.release, true);
+
+  return webpackBuild(config.builds.release, webpackConfig)
+    .pipe(gulp.dest(webpackConfig.output.path));
 });
 
 gulp.task('webpack:test', [ 'tsconfig:glob' ], () => {
-  return webpackBuild(config.builds.test, getWebpackConfig(config.builds.test));
+  const webpackConfig = getWebpackConfig(config.builds.test);
+
+  return webpackBuild(config.builds.test, webpackConfig)
+    .pipe(gulp.dest(webpackConfig.output.path));
 });
 
 // mocha Tasks
@@ -429,54 +448,34 @@ gulp.task('mocha:run', () => {
     .pipe(mocha({ reporter: args.reporter || (config.quiet ? 'dot' : config.test.reporter) }));
 });
 
-/*
-gulp.task('watch:mocha', ['clean:watch'], function(cb) {
-  var webpackConfig = getWebpackConfig(config.builds.test);
+gulp.task('watch', [ 'watch:mocha' ]);
+
+gulp.task('watch:mocha', [ 'clean:build' ], () => {
+  const webpackConfig = getWebpackConfig(config.builds.test);
 
   webpackConfig.devtool = 'eval';
   webpackConfig.watch = true;
   webpackConfig.failOnError = false;
   webpackConfig.debug = true;
 
-  var reporter = args.reporter || 'dot';
+  const reporter = args.reporter || 'dot';
 
-  return webpackBuild(config.builds.watch, webpackConfig, function() {})
-    .pipe(filter(function(file) { return file.path === path.join(webpackConfig.output.path, webpackConfig.output.filename); }))
-    .pipe(through(function(file) {
-      var target = path.join(webpackConfig.output.path, webpackConfig.output.filename);
-      if (file.path === target) {
-        gulp
-          .src(target)
-          .pipe(mocha({ reporter }))
-          .on('error', function() {});
-      }
+  return webpackBuild(config.builds.test, webpackConfig)
+    .on('error', (err) => {
+      log(err.message);
+    })
+    .pipe(gulp.dest(webpackConfig.output.path))
+    .pipe(through((file) => {
+      log('Testing', file.path, '...');
+
+      gulp
+        .src(file.path, { read: false })
+        .pipe(mocha({ reporter }))
+        .on('error', (err) => {
+          log(err.message);
+        });
     }));
 });
-
-gulp.task('watch:dist', ['watch:dist:debug']);
-
-gulp.task('watch:dist:debug', [], function() {
-  var webpackConfig = getWebpackConfig(config.builds.debug);
-
-  webpackConfig.watch = true;
-  webpackConfig.failOnError = false;
-
-  return webpackBuild(config.builds.debug, webpackConfig, function() {})
-    .pipe(gulp.dest(path.join(config.dirs.dist, config.builds.debug)))
-    .on('error', function() {});
-});
-
-gulp.task('watch:dist:release', [], function() {
-  var webpackConfig = getWebpackConfig(config.builds.release);
-
-  webpackConfig.watch = true;
-  webpackConfig.failOnError = false;
-
-  return webpackBuild(config.builds.release, webpackConfig, function() {})
-    .pipe(gulp.dest(path.join(config.dirs.dist, config.builds.release)))
-    .on('error', function() {});
-});
-*/
 
 // browser Tasks
 
