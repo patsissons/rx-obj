@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/patsissons/rx-obj#readme",
   "scripts": {
-    "test": "gulp test",
+    "test": "gulp npm:test",
     "gulp": "gulp",
     "webpack": "webpack",
     "mocha": "mocha",
