@@ -5,7 +5,7 @@
 This project is designed to provide a ***minimalistic*** approach to reactive objects using [RxJS](https://github.com/ReactiveX/RxJS).
 
 [![Build Status](https://img.shields.io/travis/patsissons/rx-obj.svg?branch=develop)](https://travis-ci.org/patsissons/rx-obj)
-<!-- [![Coverage Status](https://coveralls.io/repos/patsissons/rx-obj/badge.svg?branch=develop&service=github)](https://coveralls.io/github/patsissons/rx-obj?branch=develop) -->
+[![Coverage Status](https://coveralls.io/repos/github/patsissons/rx-obj/badge.svg?branch=develop)](https://coveralls.io/github/patsissons/rx-obj?branch=develop)
 [![npm Downloads](https://img.shields.io/npm/dt/rx-obj.svg)](https://www.npmjs.com/package/rx-obj)
 [![npm Version](https://img.shields.io/npm/v/rx-obj.svg)](https://www.npmjs.com/package/rx-obj)
 [![npm License](https://img.shields.io/npm/l/rx-obj.svg)](https://www.npmjs.com/package/rx-obj)
