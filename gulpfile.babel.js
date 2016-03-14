@@ -17,7 +17,7 @@ import through from 'through';
 import tsc from 'gulp-tsc';
 import tsconfigGlob from 'tsconfig-glob';
 import tslint from 'gulp-tslint';
-import typings from 'gulp-typings';
+// import typings from 'gulp-typings';
 import util from 'gulp-util';
 import webpack from 'webpack';
 import webpackStream from 'webpack-stream';
@@ -207,10 +207,25 @@ gulp.task('clean:tsc', () => {
 
 gulp.task('typings', [ 'typings:install' ]);
 
-gulp.task('typings:install', () => {
-  return gulp
+gulp.task('typings:install', (done) => {
+  gulp
     .src(path.join(__dirname, config.files.typings))
-    .pipe(typings());
+    // .pipe(typings());
+    // gulp-typings is currently breaking node 0.12 support (due to beautylog)
+    // we will manually install typings until it is resolved
+    .pipe(through((file) => {
+      // we need to require typings here until gulp-typings is fixed
+      // eslint-disable-next-line global-require
+      require('typings').install({
+        production: false,
+        cwd: path.dirname(file.path),
+      }).then(() => {
+        done(null, file);
+      }, (err) => {
+        util.PluginError('typings Error', err);
+        done(err, file);
+      });
+    }));
 });
 
 gulp.task('typings:ensure', (done) => {
