@@ -9,6 +9,7 @@ This project is designed to provide a ***minimalistic*** approach to reactive ob
 [![npm Version](https://img.shields.io/npm/v/rx-obj.svg)](https://www.npmjs.com/package/rx-obj)
 [![npm Downloads](https://img.shields.io/npm/dt/rx-obj.svg)](https://www.npmjs.com/package/rx-obj)
 [![npm License](https://img.shields.io/npm/l/rx-obj.svg)](https://www.npmjs.com/package/rx-obj)
+[![Dependency Status](https://img.shields.io/versioneye/d/nodejs/rx-obj.svg)](https://www.versioneye.com/nodejs/rx-obj)
 [![eslint-strict-style](https://img.shields.io/badge/code%20style-strict-117D6B.svg)](https://github.com/keithamus/eslint-config-strict)
 [![Join the chat at https://gitter.im/patsissons/rx-obj](https://badges.gitter.im/patsissons/rx-obj.svg)](https://gitter.im/patsissons/rx-obj?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
