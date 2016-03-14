@@ -1,0 +1,27 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "noImplicitAny": true
+  },
+  "filesGlob": [
+    "./typings/main.d.ts",
+    "!./src/typings/**/*",
+    "./src/**/*.ts",
+    "./test/**/*.ts"
+  ],
+  "files": [
+    "./typings/main.d.ts",
+    "./src/Extensions.ts",
+    "./src/Interfaces.ts",
+    "./src/ReactiveObject.ts",
+    "./src/ReactiveProperty.ts",
+    "./src/rx.obj.ts",
+    "./src/ScheduledSubject.ts",
+    "./test/ReactiveObject.spec.ts",
+    "./test/ReactiveProperty.spec.ts",
+    "./test/rx.obj.tests.ts",
+    "./test/Sanity.spec.ts"
+  ]
+}
