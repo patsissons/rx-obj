@@ -1,18 +1,13 @@
 'use strict';
 
-if (DEBUG) {
-  console.log('*** DEBUG BUILD ***');
-}
-
 import * as Interfaces from './Interfaces';
-import * as Extensions from './Extensions';
+import './Extensions';
 
-import ReactiveObject from './ReactiveObject';
-import { ReactiveProperty, ReactiveOutputProperty} from './ReactiveProperty';
+// import ReactiveObject from './ReactiveObject';
+// import { ReactiveProperty, ReactiveOutputProperty} from './ReactiveProperty';
 
 export {
   Interfaces,
-  Extensions,
-  ReactiveObject,
-  ReactiveProperty, ReactiveOutputProperty
+  // ReactiveObject,
+  // ReactiveProperty, ReactiveOutputProperty
 };

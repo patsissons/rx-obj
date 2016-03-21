@@ -11,7 +11,8 @@ import { ReactiveProperty } from './ReactiveProperty';
 export class ReactiveObject extends Object implements IReactiveObject {
   private changingSubject = new Subject<IReactivePropertyChangedEventArgs<IReactiveObject>>();
   private changedSubject = new Subject<IReactivePropertyChangedEventArgs<IReactiveObject>>();
-  private notificationsEnabledSubject = new BehaviorSubject<boolean>(true);
+  private thrownErrorsSubject = new Subject<any>();
+  private notificationsDelayedSubject = new BehaviorSubject(0);
 
   get changing() {
     return this.changingSubject
@@ -23,14 +24,29 @@ export class ReactiveObject extends Object implements IReactiveObject {
       .asObservable();
   }
 
-  suppressChangeNotifications() {
-    let sub = new Subscription();
-    let x: Object;
-    return sub;
+  get thrownErrors() {
+    return this.thrownErrorsSubject
+      .asObservable();
+  }
+
+  delayChangeNotifications() {
+    this.notificationsDelayedSubject.next(this.notificationsDelayedSubject.value + 1);
+
+    return new Subscription(() => {
+      this.notificationsDelayedSubject.next(this.notificationsDelayedSubject.value - 1);
+    });
+  }
+
+  areChangeNotificationsEnabled() {
+    return this.notificationsDelayedSubject.value === 0;
+  }
+
+  areChangeNotificationsDelayed() {
+    return this.notificationsDelayedSubject.value > 0;
   }
 
   property<T>(initialValue?: T, scheduler?: Scheduler): IReactiveProperty<T> {
-    let prop = new ReactiveProperty(initialValue);
+    let prop = new ReactiveProperty(initialValue, scheduler);
 
     return prop;
   }
