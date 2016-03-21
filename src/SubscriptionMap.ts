@@ -1,16 +1,16 @@
 import { Subscription } from 'rxjs';
-import { IReactiveObject } from './Interfaces';
+import { ISubscription, IReactiveObject } from './Interfaces';
 
-export class SubscriptionMap<TKey extends Subscription, TValue> {
-  static ErrorMessages = {
+export class SubscriptionMap<TKey extends ISubscription, TValue> {
+  private static ErrorMessages = {
     DuplicateKeyError: 'Subscription Key Already Exists',
     MissingKeyError: 'Subscription Key Does Not Exist',
-  }
+  };
 
   constructor(private keyFunction: (sub: TKey) => string) {
   }
 
-  private map = <Object>{};
+  private map = <any>{};
 
   public contains(sub: TKey) {
     return this.containsKey(this.keyFunction(sub));
@@ -37,7 +37,7 @@ export class SubscriptionMap<TKey extends Subscription, TValue> {
       throw new Error(SubscriptionMap.ErrorMessages.DuplicateKeyError);
     }
 
-    let removeSub = new Subscription(() => {
+    const removeSub = new Subscription(() => {
       this.RemoveKey(key, sub);
     });
 
@@ -60,8 +60,8 @@ export class SubscriptionMap<TKey extends Subscription, TValue> {
   }
 
   protected getKeyValue(key: string, sub: TKey, valueCreator: (sub: TKey) => TValue) {
-    let keyExists = this.containsKey(key);
-    let value = keyExists ? this.map[key] : valueCreator(sub);
+    const keyExists = this.containsKey(key);
+    const value = keyExists ? <TValue>this.map[key] : valueCreator(sub);
 
     if (keyExists === false) {
       this.AddKey(key, sub, value);

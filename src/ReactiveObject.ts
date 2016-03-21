@@ -6,56 +6,51 @@ import { Observable, Subject, BehaviorSubject, Subscription } from 'rxjs';
 import { Scheduler } from 'rxjs/Scheduler';
 
 import { IReactiveObject, IReactiveProperty, IReactiveCommand, IReactivePropertyChangedEventArgs } from './Interfaces';
-import { ReactiveProperty } from './ReactiveProperty';
+// import { ReactiveProperty } from './ReactiveProperty';
 
-export class ReactiveObject extends Object implements IReactiveObject {
-  private changingSubject = new Subject<IReactivePropertyChangedEventArgs<IReactiveObject>>();
-  private changedSubject = new Subject<IReactivePropertyChangedEventArgs<IReactiveObject>>();
-  private thrownErrorsSubject = new Subject<any>();
-  private notificationsDelayedSubject = new BehaviorSubject(0);
+export class ReactiveObject extends Subscription implements IReactiveObject {
+  // get changing() {
+  //   return this.changingSubject
+  //     .asObservable();
+  // }
 
-  get changing() {
-    return this.changingSubject
-      .asObservable();
-  }
+  // get changed() {
+  //   return this.changedSubject
+  //     .asObservable();
+  // }
 
-  get changed() {
-    return this.changedSubject
-      .asObservable();
-  }
+  // get thrownErrors() {
+  //   return this.thrownErrorsSubject
+  //     .asObservable();
+  // }
 
-  get thrownErrors() {
-    return this.thrownErrorsSubject
-      .asObservable();
-  }
+  // delayChangeNotifications() {
+  //   this.notificationsDelayedSubject.next(this.notificationsDelayedSubject.value + 1);
 
-  delayChangeNotifications() {
-    this.notificationsDelayedSubject.next(this.notificationsDelayedSubject.value + 1);
+  //   return new Subscription(() => {
+  //     this.notificationsDelayedSubject.next(this.notificationsDelayedSubject.value - 1);
+  //   });
+  // }
 
-    return new Subscription(() => {
-      this.notificationsDelayedSubject.next(this.notificationsDelayedSubject.value - 1);
-    });
-  }
+  // areChangeNotificationsEnabled() {
+  //   return this.notificationsDelayedSubject.value === 0;
+  // }
 
-  areChangeNotificationsEnabled() {
-    return this.notificationsDelayedSubject.value === 0;
-  }
+  // areChangeNotificationsDelayed() {
+  //   return this.notificationsDelayedSubject.value > 0;
+  // }
 
-  areChangeNotificationsDelayed() {
-    return this.notificationsDelayedSubject.value > 0;
-  }
+  // property<T>(initialValue?: T, scheduler?: Scheduler): IReactiveProperty<T> {
+  //   let prop = new ReactiveProperty(initialValue, scheduler);
 
-  property<T>(initialValue?: T, scheduler?: Scheduler): IReactiveProperty<T> {
-    let prop = new ReactiveProperty(initialValue, scheduler);
+  //   return prop;
+  // }
 
-    return prop;
-  }
+  // command<TRet, TParam>(execute: (x: TParam) => Observable<TRet>, canExecute: Observable<boolean>): IReactiveCommand<TRet> {
+  //   let cmd: IReactiveCommand<TRet> = null;
 
-  command<TRet, TParam>(execute: (x: TParam) => Observable<TRet>, canExecute: Observable<boolean>): IReactiveCommand<TRet> {
-    let cmd: IReactiveCommand<TRet> = null;
-
-    return cmd;
-  }
+  //   return cmd;
+  // }
 };
 
 export default ReactiveObject;

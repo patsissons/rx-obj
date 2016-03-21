@@ -3,62 +3,32 @@
 import { Observer, Observable, Subject, Subscription } from 'rxjs';
 import { Scheduler } from 'rxjs/Scheduler';
 
-export class ScheduledSubject<T> implements Observer<T>, Subscription {
-  protected subject: Subject<T> = null;
-  protected defaultObserverSub: Subscription = null;
+export class ScheduledSubject<T> extends Subject<T> {
+  protected defaultObserverSub: Subscription;
   protected observerRefCount = 0;
 
-  constructor(protected scheduler: Scheduler, protected defaultObserver?: Observer<T>, defaultSubject?: Subject<T>) {
-    this.subject = defaultSubject || new Subject<T>();
+  constructor(protected scheduler?: Scheduler, defaultObserver?: Observer<T>, defaultObservable?: Observable<T>) {
+    super(defaultObserver, defaultObservable);
 
-    if (this.defaultObserver != null) {
-      this.defaultObserverSub = this.subject
+    if (this.destination) {
+      this.defaultObserverSub = this.source
         .observeOn(this.scheduler)
-        .subscribe(this.defaultObserver);
+        .subscribe(this.destination);
     }
-  }
-
-  get isUnsubscribed() {
-    return this.subject.isUnsubscribed;
-  }
-
-  add(subscription: Subscription | Function | void) {
-    this.subject.add(subscription);
-  }
-
-  remove(subscription: Subscription) {
-    this.subject.remove(subscription);
-  }
-
-  unsubscribe() {
-    if (this.subject.isUnsubscribed === false) {
-      this.subject.unsubscribe();
-    }
-  }
-
-  complete() {
-    this.subject.complete();
-  }
-
-  error(err?: any) {
-    this.subject.error(err);
-  }
-
-  next(value: T) {
-    this.subject.next(value);
   }
 
   subscribe(observer: Observer<T>) {
-    if (this.defaultObserverSub != null) {
+    if (this.defaultObserverSub) {
       this.defaultObserverSub.unsubscribe();
     }
 
     ++this.observerRefCount;
 
-    let sub = this.subject.observeOn(this.scheduler).subscribe(observer);
+    const sub = this.observeOn(this.scheduler).subscribe(observer);
+
     sub.add(new Subscription(() => {
-      if (--this.observerRefCount <= 0 && this.defaultObserver != null) {
-        this.defaultObserverSub = this.subject.observeOn(this.scheduler).subscribe(this.defaultObserver);
+      if (--this.observerRefCount <= 0 && this.destination != null) {
+        this.defaultObserverSub = this.observeOn(this.scheduler).subscribe(this.destination);
       }
     }));
 

@@ -8,12 +8,14 @@ export interface IReactivePropertyChangedEventArgs<T> {
   sender: T;
 }
 
-export interface IReactiveObject {
-  // changing: Observable<IReactivePropertyChangedEventArgs<IReactiveObject>>;
-  // changed: Observable<IReactivePropertyChangedEventArgs<IReactiveObject>>;
+export interface ISubscription {
+  isUnsubscribed: boolean;
+  unsubscribe(): void;
+  add(subscription: Subscription | Function | void): void;
+  remove(subscription: Subscription): void;
+}
 
-  // property<T>(initialValue?: T, scheduler?: Scheduler): IReactiveProperty<T>;
-  // command<TRet, TParam>(execute: (x: TParam) => Observable<TRet>, canExecute: (x: TParam) => Observable<boolean>, scheduler?: Scheduler): IReactiveCommand<TRet>;
+export interface IReactiveObject extends ISubscription {
 };
 
 export interface IReactiveState<T extends IReactiveObject> {
@@ -31,23 +33,23 @@ export interface IReactiveState<T extends IReactiveObject> {
   delayChangeNotifications(): Subscription;
 }
 
-// export interface IReactiveProperty<T> {
-//   changing: Observable<T>;
-//   changed: Observable<T>;
-//   value: T;
-// };
+export interface IReactiveProperty<T> {
+  // changing: Observable<T>;
+  // changed: Observable<T>;
+  // value: T;
+};
 
-// export interface IReactiveOutputProperty<T> extends IReactiveProperty<T> {
-//   source: Observable<T>;
-//   thrownErrors: Observable<any>;
+export interface IReactiveOutputProperty<T> extends IReactiveProperty<T> {
+  // source: Observable<T>;
+  // thrownErrors: Observable<any>;
 
-//   connect(): Subscription;
-//   catchErrors(errorHandler: (error: any) => void): IReactiveOutputProperty<T>;
-//   unsubscribe(): void;
-// };
+  // connect(): Subscription;
+  // catchErrors(errorHandler: (error: any) => void): IReactiveOutputProperty<T>;
+  // unsubscribe(): void;
+};
 
-// export interface IReactiveCommand<T> {
-// };
+export interface IReactiveCommand<T> {
+};
 
 // export interface IReactiveList<T> {
 // };
