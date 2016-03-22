@@ -1,7 +1,6 @@
 import { Subscription } from 'rxjs';
-import { ISubscription, IReactiveObject } from './Interfaces';
 
-export class SubscriptionMap<TKey extends ISubscription, TValue> {
+export class SubscriptionMap<TKey extends Subscription, TValue> {
   private static ErrorMessages = {
     DuplicateKeyError: 'Subscription Key Already Exists',
     MissingKeyError: 'Subscription Key Does Not Exist',

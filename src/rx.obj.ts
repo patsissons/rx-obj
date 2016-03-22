@@ -1,13 +1,7 @@
-'use strict';
+export { Unit } from './Unit';
+export { SubscriptionMap } from './SubscriptionMap';
+export { ScheduledSubject } from './ScheduledSubject';
+export { ReactivePropertyChangedEventArgs } from './ReactivePropertyChangedEventArgs';
+export { ReactiveApp } from './ReactiveApp';
 
-import * as Interfaces from './Interfaces';
-import './Extensions';
-
-// import ReactiveObject from './ReactiveObject';
-// import { ReactiveProperty, ReactiveOutputProperty} from './ReactiveProperty';
-
-export {
-  Interfaces,
-  // ReactiveObject,
-  // ReactiveProperty, ReactiveOutputProperty
-};
+import './Augmentations';
