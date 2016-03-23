@@ -1,87 +1,92 @@
-import { Observable, Subject, Scheduler, Subscription } from 'rxjs';
+import { Observable, Subject, Subscription } from 'rxjs';
+import { Scheduler } from 'rxjs/Scheduler';
 
 import { ReactiveApp } from './ReactiveApp';
 import { ReactiveObject } from './ReactiveObject';
-import { ReactivePropertyChangedEventArgs } from './ReactivePropertyChangedEventArgs';
+import { ReactivePropertyChanged } from './ReactivePropertyChanged';
 import { ScheduledSubject } from './ScheduledSubject';
 import { Unit } from './Unit';
 
-function dedup<TSender>(batch: ReactivePropertyChangedEventArgs<TSender>[]) {
-  if (batch.length <= 1) {
-    return batch;
-  }
+export abstract class ReactiveState<TSender extends ReactiveObject, TChange> extends Subscription {
+  constructor(protected sender: TSender, errorScheduler?: Scheduler) {
+    super();
 
-  const seen = <any>{};
-  const unique: ReactivePropertyChangedEventArgs<TSender>[] = [];
+    this.thrownErrorsSubject = new ScheduledSubject(errorScheduler, ReactiveApp.DefaultErrorHandler);
 
-  for (let i = batch.length - 1; i >= 0; --i) {
-    const args = batch[i];
-    if (seen[args.propertyName] === undefined) {
-      unique.push(args);
-    }
-  }
+    this.changingObservable = this.createChangingObservable()
+      .publish()
+      .refCount();
+    this.changedObservable = this.createChangedObservable()
+      .publish()
+      .refCount();
 
-  return unique;
-}
-
-export class ReactiveState<TSender extends ReactiveObject> {
-  constructor(private sender: TSender) {
+    this.add(this.startDelayNotificationsSubject);
+    this.add(this.changingSubject);
+    this.add(this.changedSubject);
+    this.add(this.thrownErrorsSubject);
   }
 
   private changeNotificationsSuppressed = 0;
   private changeNotificationsDelayed = 0;
-  private changingSubject = new Subject<ReactivePropertyChangedEventArgs<TSender>>();
-  private changedSubject = new Subject<ReactivePropertyChangedEventArgs<TSender>>();
   private startDelayNotificationsSubject = new Subject<Unit>();
-  // NOTE: The undefined scheduler is equivalent to the immediate scheduler
-  private thrownErrorsSubject = new ScheduledSubject<Error>(undefined, ReactiveApp.DefaultErrorHandler);
+
+  protected changingSubject = new Subject<TChange>();
+  protected changedSubject = new Subject<TChange>();
+
+  protected thrownErrorsSubject: ScheduledSubject<Error>;
+  protected changingObservable: Observable<TChange>;
+  protected changedObservable: Observable<TChange>;
+
+  protected dedup(batch: TChange[]) {
+    return batch;
+  }
 
   // NOTE: currently RxJS's mergeMap (aka selectMany) typings does not support
   //       a projection as an array. A new ObservableInput type is coming but
   //       not yet published to npm.
 
-  private changedObservable = this.changedSubject
-    .buffer(Observable.merge(
-      this.changedSubject
-        .filter(_ => this.areChangeNotificationsDelayed() === false)
-        .map(_ => Unit.Default), this.startDelayNotificationsSubject)
-    )
-    .mergeMap(batch => <any>dedup(batch))
-    .publish()
-    .refCount();
+  protected createChangingObservable() {
+    return this.changingSubject
+      .buffer(Observable.merge(
+        this.changingSubject
+          .filter(_ => this.areChangeNotificationsDelayed() === false)
+          .map(_ => Unit.Default), this.startDelayNotificationsSubject)
+      )
+      .mergeMap<TChange>(x => <any>this.dedup(x));
+  }
 
-  private changingObservable = this.changingSubject
-    .buffer(Observable.merge(
-      this.changingSubject
-        .filter(_ => this.areChangeNotificationsDelayed() === false)
-        .map(_ => Unit.Default), this.startDelayNotificationsSubject)
-    )
-    .mergeMap(batch => <any>dedup(batch))
-    .publish()
-    .refCount();
+  protected createChangedObservable() {
+    return this.changedSubject
+      .buffer(Observable.merge(
+        this.changedSubject
+          .filter(_ => this.areChangeNotificationsDelayed() === false)
+          .map(_ => Unit.Default), this.startDelayNotificationsSubject)
+      )
+      .mergeMap<TChange>(x => <any>this.dedup(x));
+  }
 
-  get changing() {
+  public get changing() {
     return this.changingObservable;
   }
 
-  get changed() {
+  public get changed() {
     return this.changedObservable;
   }
 
-  get thrownErrors() {
+  public get thrownErrors() {
     return this.thrownErrorsSubject
       .asObservable();
   }
 
-  areChangeNotificationsEnabled() {
+  public areChangeNotificationsEnabled() {
     return this.changeNotificationsSuppressed === 0;
   }
 
-  areChangeNotificationsDelayed() {
+  public areChangeNotificationsDelayed() {
     return this.changeNotificationsDelayed > 0;
   }
 
-  suppressChangeNotifications() {
+  public suppressChangeNotifications() {
     ++this.changeNotificationsSuppressed;
 
     return new Subscription(() => {
@@ -89,7 +94,7 @@ export class ReactiveState<TSender extends ReactiveObject> {
     });
   }
 
-  delayChangeNotifications() {
+  public delayChangeNotifications() {
     ++this.changeNotificationsDelayed;
 
     if (this.changeNotificationsDelayed === 1) {
@@ -105,29 +110,25 @@ export class ReactiveState<TSender extends ReactiveObject> {
     });
   }
 
-  raisePropertyChanging(propertyName: string) {
+  protected _raisePropertyChanging(changing: () => TChange) {
     if (this.areChangeNotificationsEnabled() === false) {
       return;
     }
 
-    const changing = new ReactivePropertyChangedEventArgs(this.sender, propertyName);
-
-    this.notifyObservable(this.sender, changing, this.changingSubject);
+    this.notifyObservable(this.sender, changing(), this.changingSubject);
   }
 
-  raisePropertyChanged(propertyName: string) {
+  protected _raisePropertyChanged(changed: () => TChange) {
     if (this.areChangeNotificationsEnabled() === false) {
       return;
     }
 
-    const changed  = new ReactivePropertyChangedEventArgs(this.sender, propertyName);
-
-    this.notifyObservable(this.sender, changed, this.changedSubject);
+    this.notifyObservable(this.sender, changed(), this.changedSubject);
   }
 
-  public notifyObservable(obj: TSender, args: ReactivePropertyChangedEventArgs<TSender>, subject: Subject<ReactivePropertyChangedEventArgs<TSender>>) {
+  public notifyObservable(obj: TSender, change: TChange, subject: Subject<TChange>) {
     try {
-      subject.next(args);
+      subject.next(change);
     } catch (err) {
       this.thrownErrorsSubject.next(err);
     }

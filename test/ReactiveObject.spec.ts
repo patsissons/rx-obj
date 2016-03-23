@@ -9,8 +9,9 @@ describe('ReactiveObject Tests', () => {
     it('tmp', () => {
       const obj = new ReactiveObject();
 
+      debugger;
       let changing = obj.changing;
-      obj.delayChangeNotifications()
+      obj.delayChangeNotifications();
     });
   });
 });

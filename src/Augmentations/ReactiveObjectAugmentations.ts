@@ -1,33 +1,35 @@
 import { Observable, Subscription } from 'rxjs';
 
-import { ReactivePropertyChangedEventArgs } from '../ReactivePropertyChangedEventArgs';
-import { ReactiveObject } from '../ReactiveObject';
+import { augment } from './Augment';
 
-import { ReactiveState } from '../ReactiveState';
+import { ReactiveObject } from '../ReactiveObject';
+import { ReactiveProperty } from '../ReactiveProperty';
+import { ReactivePropertyChanged } from '../ReactivePropertyChanged';
+import { ReactiveObjectState } from '../ReactiveObjectState';
 import { SubscriptionMap } from '../SubscriptionMap';
 
 export class ReactiveObjectAugmentations {
   private static ErrorMessages = {
-    UndefinedPropertyName: 'Property name is not defined',
+    UndefinedProperty: 'Property is not defined',
   };
 
-  private static state = new SubscriptionMap<ReactiveObject, ReactiveState<ReactiveObject>>(x => x.toString());
+  private static state = new SubscriptionMap<ReactiveObject, ReactiveObjectState<ReactiveObject>>(x => x.toString());
 
   private static getStateValue<TSender extends ReactiveObject>(This: TSender) {
     return ReactiveObjectAugmentations.state
-      .GetValue(This, key => <ReactiveState<ReactiveObject>>new ReactiveState<TSender>(This));
+      .GetValue(This, key => <ReactiveObjectState<ReactiveObject>>new ReactiveObjectState<TSender>(This));
   }
 
   public static getChangingObservable<TSender extends ReactiveObject>(This: TSender) {
     const rxState = ReactiveObjectAugmentations.getStateValue(This);
 
-    return <ReactivePropertyChangedEventArgs<TSender>><any>rxState.changing;
+    return <ReactivePropertyChanged<TSender, any>><any>rxState.changing;
   }
 
   public static getChangedObservable<TSender extends ReactiveObject>(This: TSender) {
     const rxState = ReactiveObjectAugmentations.getStateValue(This);
 
-    return <ReactivePropertyChangedEventArgs<TSender>><any>rxState.changed;
+    return <ReactivePropertyChanged<TSender, any>><any>rxState.changed;
   }
 
   public static getThrownErrorsObservable<TSender extends ReactiveObject>(This: TSender) {
@@ -36,24 +38,24 @@ export class ReactiveObjectAugmentations {
     return rxState.thrownErrors;
   }
 
-  public static raisePropertyChanging<TSender extends ReactiveObject>(This: TSender, propertyName: string) {
-    if (propertyName == undefined) {
-      throw new Error(ReactiveObjectAugmentations.ErrorMessages.UndefinedPropertyName);
+  public static raisePropertyChanging<TSender extends ReactiveObject>(This: TSender, property: ReactiveProperty<TSender, any>) {
+    if (property == undefined) {
+      throw new Error(ReactiveObjectAugmentations.ErrorMessages.UndefinedProperty);
     }
 
     const rxState = ReactiveObjectAugmentations.getStateValue(This);
 
-    rxState.raisePropertyChanging(propertyName);
+    rxState.raisePropertyChanging(property);
   }
 
-  public static raisePropertyChanged<TSender extends ReactiveObject>(This: TSender, propertyName: string) {
-    if (propertyName == undefined) {
-      throw new Error(ReactiveObjectAugmentations.ErrorMessages.UndefinedPropertyName);
+  public static raisePropertyChanged<TSender extends ReactiveObject>(This: TSender, property: ReactiveProperty<TSender, any>) {
+    if (property == undefined) {
+      throw new Error(ReactiveObjectAugmentations.ErrorMessages.UndefinedProperty);
     }
 
     const rxState = ReactiveObjectAugmentations.getStateValue(This);
 
-    rxState.raisePropertyChanged(propertyName);
+    rxState.raisePropertyChanged(property);
   }
 
   public static suppressChangeNotifications<TSender extends ReactiveObject>(This: TSender) {
@@ -83,8 +85,8 @@ export class ReactiveObjectAugmentations {
 
 declare module '../ReactiveObject' {
   interface ReactiveObject {
-    getChangingObservable<TSender extends ReactiveObject>(): ReactivePropertyChangedEventArgs<TSender>;
-    getChangedObservable<TSender extends ReactiveObject>(): ReactivePropertyChangedEventArgs<TSender>;
+    getChangingObservable<TSender extends ReactiveObject>(): ReactivePropertyChanged<TSender, any>;
+    getChangedObservable<TSender extends ReactiveObject>(): ReactivePropertyChanged<TSender, any>;
     getThrownErrorsObservable<TSender extends ReactiveObject>(): Observable<Error>;
     raisePropertyChanging<TSender extends ReactiveObject>(propertyName: string): void;
     raisePropertyChanged<TSender extends ReactiveObject>(propertyName: string): void;
@@ -95,12 +97,12 @@ declare module '../ReactiveObject' {
   }
 }
 
-ReactiveObject.prototype.getChangingObservable = function() { return ReactiveObjectAugmentations.getChangingObservable(this); };
-ReactiveObject.prototype.getChangedObservable = function() { return ReactiveObjectAugmentations.getChangedObservable(this); };
-ReactiveObject.prototype.getThrownErrorsObservable = function() { return ReactiveObjectAugmentations.getThrownErrorsObservable(this); };
-ReactiveObject.prototype.raisePropertyChanging = function(propertyName: string) { return ReactiveObjectAugmentations.raisePropertyChanging(this, propertyName); };
-ReactiveObject.prototype.raisePropertyChanged = function(propertyName: string) { return ReactiveObjectAugmentations.raisePropertyChanged(this, propertyName); };
-ReactiveObject.prototype.suppressChangeNotifications = function() { return ReactiveObjectAugmentations.suppressChangeNotifications(this); };
-ReactiveObject.prototype.areChangeNotificationsEnabled = function() { return ReactiveObjectAugmentations.areChangeNotificationsEnabled(this); };
-ReactiveObject.prototype.delayChangeNotifications = function() { return ReactiveObjectAugmentations.delayChangeNotifications(this); };
-ReactiveObject.prototype.areChangeNotificationsDelayed = function() { return ReactiveObjectAugmentations.areChangeNotificationsDelayed(this); };
+ReactiveObject.prototype.getChangingObservable = augment(ReactiveObjectAugmentations.getChangingObservable, this);
+ReactiveObject.prototype.getChangedObservable = augment(ReactiveObjectAugmentations.getChangedObservable, this);
+ReactiveObject.prototype.getThrownErrorsObservable = augment(ReactiveObjectAugmentations.getThrownErrorsObservable, this);
+ReactiveObject.prototype.raisePropertyChanging = augment(ReactiveObjectAugmentations.raisePropertyChanging, this);
+ReactiveObject.prototype.raisePropertyChanged = augment(ReactiveObjectAugmentations.raisePropertyChanged, this);
+ReactiveObject.prototype.suppressChangeNotifications = augment(ReactiveObjectAugmentations.suppressChangeNotifications, this);
+ReactiveObject.prototype.areChangeNotificationsEnabled = augment(ReactiveObjectAugmentations.areChangeNotificationsEnabled, this);
+ReactiveObject.prototype.delayChangeNotifications = augment(ReactiveObjectAugmentations.delayChangeNotifications, this);
+ReactiveObject.prototype.areChangeNotificationsDelayed = augment(ReactiveObjectAugmentations.areChangeNotificationsDelayed, this);

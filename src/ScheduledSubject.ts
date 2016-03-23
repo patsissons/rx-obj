@@ -1,5 +1,3 @@
-'use strict';
-
 import { Observer, Observable, Subject, Subscription, Operator } from 'rxjs';
 import { Scheduler } from 'rxjs/Scheduler';
 import { SubjectSubscription } from 'rxjs/subject/SubjectSubscription';
