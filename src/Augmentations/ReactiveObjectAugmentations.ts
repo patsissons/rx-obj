@@ -88,8 +88,8 @@ declare module '../ReactiveObject' {
     getChangingObservable<TSender extends ReactiveObject>(): ReactivePropertyChanged<TSender, any>;
     getChangedObservable<TSender extends ReactiveObject>(): ReactivePropertyChanged<TSender, any>;
     getThrownErrorsObservable<TSender extends ReactiveObject>(): Observable<Error>;
-    raisePropertyChanging<TSender extends ReactiveObject>(propertyName: string): void;
-    raisePropertyChanged<TSender extends ReactiveObject>(propertyName: string): void;
+    raisePropertyChanging<TSender extends ReactiveObject>(property: ReactiveProperty<TSender, any>): void;
+    raisePropertyChanged<TSender extends ReactiveObject>(property: ReactiveProperty<TSender, any>): void;
     suppressChangeNotifications<TSender extends ReactiveObject>(): Subscription;
     areChangeNotificationsEnabled<TSender extends ReactiveObject>(): boolean;
     delayChangeNotifications<TSender extends ReactiveObject>(): Subscription;

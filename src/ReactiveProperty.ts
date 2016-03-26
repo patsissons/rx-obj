@@ -1,44 +1,44 @@
 import { Observable, Subject, Scheduler, Subscription } from 'rxjs';
 
-import { ReactiveApp } from './ReactiveApp';
+// import { ReactiveApp } from './ReactiveApp';
 import { ReactiveObject } from './ReactiveObject';
-import { ScheduledSubject } from './ScheduledSubject';
-import { ReactivePropertyValueChanged } from './ReactivePropertyValueChanged';
+// import { ScheduledSubject } from './ScheduledSubject';
+// import { ReactivePropertyValueChanged } from './ReactivePropertyValueChanged';
 
 export class ReactiveProperty<TSender extends ReactiveObject, TValue> extends Subscription {
-  constructor(protected sender: TSender, initialValue?: TValue, scheduler = Scheduler.queue) {
-    super();
+  // constructor(protected sender: TSender, initialValue?: TValue, scheduler = Scheduler.queue) {
+  //   super();
 
-    this.valueSubject = new ScheduledSubject<TValue>(scheduler);
+  //   // this.valueSubject = new ScheduledSubject<TValue>(scheduler);
 
-    this.valueSubject
-      .asObservable()
-      .distinctUntilChanged()
-      .subscribe(x => {
-        this.changingSubject.next(new ReactivePropertyValueChanged(this.sender, this._lastValue));
-        // this.sender.raisePropertyChanging();
+  //   // this.valueSubject
+  //   //   .asObservable()
+  //   //   .distinctUntilChanged()
+  //   //   .subscribe(x => {
+  //   //     this.changingSubject.next(new ReactivePropertyValueChanged(this.sender, this._lastValue));
+  //   //     // this.sender.raisePropertyChanging();
 
-        this._lastValue = x;
+  //   //     this._lastValue = x;
 
-        this.changedSubject.next(new ReactivePropertyValueChanged(this.sender, x));
-        // this.sender.raisePropertyChanged();
-      }, this.thrownErrorsSubject.next);
+  //   //     this.changedSubject.next(new ReactivePropertyValueChanged(this.sender, x));
+  //   //     // this.sender.raisePropertyChanged();
+  //   //   }, this.thrownErrorsSubject.next);
 
-    this._lastValue = initialValue;
+  //   // this._lastValue = initialValue;
 
-    this.add(this.valueSubject);
-    this.add(this.changingSubject);
-    this.add(this.changedSubject);
-    this.add(this.thrownErrorsSubject);
-  }
+  //   // this.add(this.valueSubject);
+  //   // this.add(this.changingSubject);
+  //   // this.add(this.changedSubject);
+  //   // this.add(this.thrownErrorsSubject);
+  // }
 
-  private _lastValue: TValue;
+  // private _lastValue: TValue;
 
-  protected valueSubject: ScheduledSubject<TValue>;
+  // protected valueSubject: ScheduledSubject<TValue>;
 
-  protected changingSubject = new Subject<ReactivePropertyValueChanged<TSender, TValue>>();
-  protected changedSubject = new Subject<ReactivePropertyValueChanged<TSender, TValue>>();
-  protected thrownErrorsSubject = new ScheduledSubject<Error>(Scheduler.queue, ReactiveApp.DefaultErrorHandler);
+  // protected changingSubject = new Subject<ReactivePropertyValueChanged<TSender, TValue>>();
+  // protected changedSubject = new Subject<ReactivePropertyValueChanged<TSender, TValue>>();
+  // protected thrownErrorsSubject = new ScheduledSubject<Error>(Scheduler.queue, ReactiveApp.DefaultErrorHandler);
 
   // private changedObservable = this.changedSubject
   //   .buffer(Observable.merge(
@@ -60,13 +60,13 @@ export class ReactiveProperty<TSender extends ReactiveObject, TValue> extends Su
   //   .publish()
   //   .refCount();
 
-  public get value() {
-    return this._lastValue;
-  }
+  // public get value() {
+  //   return this._lastValue;
+  // }
 
-  public set value(value: TValue) {
-    this.valueSubject.next(value);
-  }
+  // public set value(value: TValue) {
+  //   this.valueSubject.next(value);
+  // }
 }
 
 // 'use strict';
