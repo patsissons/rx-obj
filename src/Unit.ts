@@ -1,7 +1,7 @@
 export class Unit {
-  private static default = new Unit();
+  private static defaultInstance = new Unit();
 
-  public static get Default() {
-    return Unit.default;
+  public static get default() {
+    return Unit.defaultInstance;
   }
 }

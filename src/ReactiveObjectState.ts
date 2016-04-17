@@ -33,10 +33,10 @@ export class ReactiveObjectState<TSender extends ReactiveObject> extends Reactiv
   }
 
   public raisePropertyChanging(property: ReactiveProperty<TSender, any>) {
-    this._raisePropertyChanging(() => new ReactivePropertyChanged(this.sender, property));
+    this.notifyPropertyChanging(() => new ReactivePropertyChanged(this.sender, property));
   }
 
   public raisePropertyChanged(property: ReactiveProperty<TSender, any>) {
-    this._raisePropertyChanged(() => new ReactivePropertyChanged(this.sender, property));
+    this.notifyPropertyChanged(() => new ReactivePropertyChanged(this.sender, property));
   }
 }

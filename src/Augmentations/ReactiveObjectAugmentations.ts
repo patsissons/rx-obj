@@ -9,8 +9,8 @@ import { ReactiveObjectState } from '../ReactiveObjectState';
 import { SubscriptionMap } from '../SubscriptionMap';
 
 export class ReactiveObjectAugmentations {
-  private static ErrorMessages = {
-    UndefinedProperty: 'Property is not defined',
+  private static errorMessages = {
+    undefinedProperty: 'Property is not defined',
   };
 
   private static state = new SubscriptionMap<ReactiveObject, ReactiveObjectState<ReactiveObject>>(x => x.toString());
@@ -40,7 +40,7 @@ export class ReactiveObjectAugmentations {
 
   public static raisePropertyChanging<TSender extends ReactiveObject>(This: TSender, property: ReactiveProperty<TSender, any>) {
     if (property == undefined) {
-      throw new Error(ReactiveObjectAugmentations.ErrorMessages.UndefinedProperty);
+      throw new Error(ReactiveObjectAugmentations.errorMessages.undefinedProperty);
     }
 
     const rxState = ReactiveObjectAugmentations.getStateValue(This);
@@ -50,7 +50,7 @@ export class ReactiveObjectAugmentations {
 
   public static raisePropertyChanged<TSender extends ReactiveObject>(This: TSender, property: ReactiveProperty<TSender, any>) {
     if (property == undefined) {
-      throw new Error(ReactiveObjectAugmentations.ErrorMessages.UndefinedProperty);
+      throw new Error(ReactiveObjectAugmentations.errorMessages.undefinedProperty);
     }
 
     const rxState = ReactiveObjectAugmentations.getStateValue(This);

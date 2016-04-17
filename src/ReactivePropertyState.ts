@@ -12,21 +12,21 @@ export class ReactivePropertyState<TSender extends ReactiveObject, TValue> exten
     this.source
       .distinctUntilChanged()
       .subscribe(x => {
-        this.changingSubject.next(new ReactivePropertyValueChanged(this.sender, this._lastValue));
+        this.changingSubject.next(new ReactivePropertyValueChanged(this.sender, this.lastValue));
         this.sender.raisePropertyChanging(this.property);
 
-        this._lastValue = x;
+        this.lastValue = x;
 
         this.changedSubject.next(new ReactivePropertyValueChanged(this.sender, x));
         this.sender.raisePropertyChanged(this.property);
       }, this.thrownErrorsSubject.next);
 
-    this._lastValue = initialValue;
+    this.lastValue = initialValue;
   }
 
-  private _lastValue: TValue;
+  private lastValue: TValue;
 
   get value() {
-    return this._lastValue;
+    return this.lastValue;
   }
 }

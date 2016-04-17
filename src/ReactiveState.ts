@@ -11,11 +11,12 @@ export abstract class ReactiveState<TSender extends ReactiveObject, TChange> ext
   constructor(protected sender: TSender, errorScheduler?: Scheduler) {
     super();
 
-    this.thrownErrorsSubject = new ScheduledSubject(errorScheduler, ReactiveApp.DefaultErrorHandler);
+    this.thrownErrorsSubject = new ScheduledSubject(errorScheduler, ReactiveApp.defaultErrorHandler);
 
     this.changingObservable = this.createChangingObservable()
       .publish()
       .refCount();
+
     this.changedObservable = this.createChangedObservable()
       .publish()
       .refCount();
@@ -50,7 +51,7 @@ export abstract class ReactiveState<TSender extends ReactiveObject, TChange> ext
       .buffer(Observable.merge(
         this.changingSubject
           .filter(_ => this.areChangeNotificationsDelayed() === false)
-          .map(_ => Unit.Default), this.startDelayNotificationsSubject)
+          .map(_ => Unit.default), this.startDelayNotificationsSubject)
       )
       .mergeMap<TChange>(x => <any>this.dedup(x));
   }
@@ -60,7 +61,7 @@ export abstract class ReactiveState<TSender extends ReactiveObject, TChange> ext
       .buffer(Observable.merge(
         this.changedSubject
           .filter(_ => this.areChangeNotificationsDelayed() === false)
-          .map(_ => Unit.Default), this.startDelayNotificationsSubject)
+          .map(_ => Unit.default), this.startDelayNotificationsSubject)
       )
       .mergeMap<TChange>(x => <any>this.dedup(x));
   }
@@ -98,19 +99,19 @@ export abstract class ReactiveState<TSender extends ReactiveObject, TChange> ext
     ++this.changeNotificationsDelayed;
 
     if (this.changeNotificationsDelayed === 1) {
-      this.startDelayNotificationsSubject.next(Unit.Default);
+      this.startDelayNotificationsSubject.next(Unit.default);
     }
 
     return new Subscription(() => {
       --this.changeNotificationsDelayed;
 
       if (this.changeNotificationsDelayed === 0) {
-        this.startDelayNotificationsSubject.next(Unit.Default);
+        this.startDelayNotificationsSubject.next(Unit.default);
       }
     });
   }
 
-  protected _raisePropertyChanging(changing: () => TChange) {
+  protected notifyPropertyChanging(changing: () => TChange) {
     if (this.areChangeNotificationsEnabled() === false) {
       return;
     }
@@ -118,7 +119,7 @@ export abstract class ReactiveState<TSender extends ReactiveObject, TChange> ext
     this.notifyObservable(this.sender, changing(), this.changingSubject);
   }
 
-  protected _raisePropertyChanged(changed: () => TChange) {
+  protected notifyPropertyChanged(changed: () => TChange) {
     if (this.areChangeNotificationsEnabled() === false) {
       return;
     }

@@ -1,14 +1,23 @@
 import { ReactiveObject } from './ReactiveObject';
 
 export class ReactivePropertyValueChanged<TSender extends ReactiveObject, TValue> {
-  constructor(protected _sender: TSender, protected _value: TValue) {
+  constructor(sender: TSender, value: TValue) {
+    this.state = {
+      sender,
+      value,
+    };
   }
 
+  private state: {
+    sender: TSender,
+    value: TValue,
+  } = null;
+
   public get sender() {
-    return this._sender;
+    return this.state.sender;
   }
 
   public get value() {
-    return this._value;
+    return this.state.value;
   }
 }

@@ -1,10 +1,10 @@
 import { Subscriber, Scheduler } from 'rxjs';
 
 export class ReactiveApp {
-  public static DefaultErrorHandler = Subscriber.create<Error>(err => {
+  public static defaultErrorHandler = Subscriber.create<Error>(err => {
   });
 
-  public static MainScheduler = ReactiveApp.createMainScheduler();
+  public static mainScheduler = ReactiveApp.createMainScheduler();
 
   private static createMainScheduler() {
     // TODO: ...
