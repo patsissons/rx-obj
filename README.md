@@ -1,5 +1,7 @@
 # Reactive Object Framework
 
+[![Join the chat at https://gitter.im/patsissons/rx-obj](https://badges.gitter.im/patsissons/rx-obj.svg)](https://gitter.im/patsissons/rx-obj?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 > This project is not stable and is in development. If you'd like to contribute, please submit a Pull Request.
 
 This project is designed to provide a ***minimalistic*** approach to reactive objects using [RxJS](https://github.com/ReactiveX/RxJS).
