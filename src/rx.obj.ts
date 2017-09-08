@@ -1,18 +1,11 @@
-'use strict';
+export { Unit } from './Unit';
+// export { SubscriptionMap } from './SubscriptionMap';
+// export { ScheduledSubject } from './ScheduledSubject';
+export { ReactiveApp } from './ReactiveApp';
+export { ReactiveObject } from './ReactiveObject';
+export { ReactivePropertyValueChanged } from './ReactivePropertyValueChanged';
+import { ReactiveProperty } from './ReactiveProperty';
+export { ReactivePropertyChanged } from './ReactivePropertyChanged';
+export { ReactiveCommand } from './ReactiveCommand';
 
-if (DEBUG) {
-  console.log('*** DEBUG BUILD ***');
-}
-
-import * as Interfaces from './Interfaces';
-import * as Extensions from './Extensions';
-
-import ReactiveObject from './ReactiveObject';
-import { ReactiveProperty, ReactiveOutputProperty} from './ReactiveProperty';
-
-export {
-  Interfaces,
-  Extensions,
-  ReactiveObject,
-  ReactiveProperty, ReactiveOutputProperty
-};
+import './Augmentations';

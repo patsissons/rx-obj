@@ -5,10 +5,13 @@ import { expect } from 'chai';
 import { ReactiveObject } from '../src/ReactiveObject';
 
 describe('ReactiveObject Tests', () => {
-  // describe('tmp', () => {
-  //   it('tmp', () => {
-  //     class TestObj extends ReactiveObject {
-  //     }
-  //   });
-  // });
+  describe('tmp', () => {
+    it('tmp', () => {
+      const obj = new ReactiveObject();
+
+      debugger;
+      let changing = obj.changing;
+      obj.delayChangeNotifications();
+    });
+  });
 });

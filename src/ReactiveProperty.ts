@@ -1,147 +1,218 @@
-'use strict';
+import { Observable, Subject, Scheduler, Subscription } from 'rxjs';
 
-import { Observable, ConnectableObservable, Subject, Subscription } from 'rxjs';
-import { Scheduler } from 'rxjs/Scheduler';
+// import { ReactiveApp } from './ReactiveApp';
+import { ReactiveObject } from './ReactiveObject';
+// import { ScheduledSubject } from './ScheduledSubject';
+// import { ReactivePropertyValueChanged } from './ReactivePropertyValueChanged';
 
-import { IReactiveProperty, IReactiveOutputProperty } from './Interfaces';
-import { ScheduledSubject } from './ScheduledSubject';
+export class ReactiveProperty<TSender extends ReactiveObject, TValue> extends Subscription {
+  // constructor(protected sender: TSender, initialValue?: TValue, scheduler = Scheduler.queue) {
+  //   super();
 
-export class ReactiveProperty<T> implements IReactiveProperty<T> {
-  protected currentValue: T = null;
-  protected changingSubject: Subject<T> = null;
-  protected changedSubject: Subject<T> = null;
+  //   // this.valueSubject = new ScheduledSubject<TValue>(scheduler);
 
-  constructor(initialValue?: T, scheduler?: Scheduler) {
-    this.currentValue = initialValue;
-  }
+  //   // this.valueSubject
+  //   //   .asObservable()
+  //   //   .distinctUntilChanged()
+  //   //   .subscribe(x => {
+  //   //     this.changingSubject.next(new ReactivePropertyValueChanged(this.sender, this._lastValue));
+  //   //     // this.sender.raisePropertyChanging();
 
-  protected onValueChanged(newValue: T) {
-    if (this.currentValue !== newValue) {
-      if (this.changingSubject != null) {
-        this.changingSubject.next(newValue);
-      }
+  //   //     this._lastValue = x;
 
-      this.currentValue = newValue;
+  //   //     this.changedSubject.next(new ReactivePropertyValueChanged(this.sender, x));
+  //   //     // this.sender.raisePropertyChanged();
+  //   //   }, this.thrownErrorsSubject.next);
 
-      if (this.changedSubject != null) {
-        this.changedSubject.next(newValue);
-      }
-    }
-  }
+  //   // this._lastValue = initialValue;
 
-  get value() {
-    return this.currentValue;
-  }
+  //   // this.add(this.valueSubject);
+  //   // this.add(this.changingSubject);
+  //   // this.add(this.changedSubject);
+  //   // this.add(this.thrownErrorsSubject);
+  // }
 
-  set value(value: T) {
-    this.onValueChanged(value);
-  }
+  // private _lastValue: TValue;
 
-  get changing() {
-    if (this.changingSubject == null) {
-      this.changingSubject = new Subject<T>();
-    }
+  // protected valueSubject: ScheduledSubject<TValue>;
 
-    return this.changingSubject
-      .asObservable();
-  }
+  // protected changingSubject = new Subject<ReactivePropertyValueChanged<TSender, TValue>>();
+  // protected changedSubject = new Subject<ReactivePropertyValueChanged<TSender, TValue>>();
+  // protected thrownErrorsSubject = new ScheduledSubject<Error>(Scheduler.queue, ReactiveApp.DefaultErrorHandler);
 
-  get changed() {
-    if (this.changedSubject == null) {
-      this.changedSubject = new Subject<T>();
-    }
+  // private changedObservable = this.changedSubject
+  //   .buffer(Observable.merge(
+  //     this.changedSubject
+  //       .filter(_ => this.areChangeNotificationsDelayed() === false)
+  //       .map(_ => Unit.Default), this.startDelayNotificationsSubject)
+  //   )
+  //   .mergeMap(batch => <any>dedup(batch))
+  //   .publish()
+  //   .refCount();
 
-    return this.changedSubject
-      .asObservable();
-  }
+  // private changingObservable = this.changingSubject
+  //   .buffer(Observable.merge(
+  //     this.changingSubject
+  //       .filter(_ => this.areChangeNotificationsDelayed() === false)
+  //       .map(_ => Unit.Default), this.startDelayNotificationsSubject)
+  //   )
+  //   .mergeMap(batch => <any>dedup(batch))
+  //   .publish()
+  //   .refCount();
+
+  // public get value() {
+  //   return this._lastValue;
+  // }
+
+  // public set value(value: TValue) {
+  //   this.valueSubject.next(value);
+  // }
 }
 
-export class ReactiveOutputProperty<T> extends ReactiveProperty<T> implements IReactiveOutputProperty<T> {
-  protected sourceObservable: ConnectableObservable<T> = null;
-  protected sourceSubject: Subject<T> = null;
-  protected sourceSubscription: Subscription = null;
-  protected thrownErrorsSubject: Subject<any> = null;
+// 'use strict';
 
-  constructor(source: Observable<T>, initialValue?: T, scheduler?: Scheduler) {
-    super(initialValue);
+// import { Observable, ConnectableObservable, Subject, Subscription } from 'rxjs';
+// import { Scheduler } from 'rxjs/Scheduler';
 
-    if (source == null) {
-      throw new Error('Invalid Source Observable');
-    }
+// import { IReactiveProperty, IReactiveOutputProperty } from './Interfaces';
+// import { ScheduledSubject } from './ScheduledSubject';
 
-    this.sourceSubject = new Subject<T>();
+// export class ReactiveProperty<T> implements IReactiveProperty<T> {
+//   protected currentValue: T = null;
+//   protected changingSubject: Subject<T> = null;
+//   protected changedSubject: Subject<T> = null;
 
-    this.sourceSubject.subscribe(
-      x => {
-        this.onValueChanged(x);
-      }, x => {
-        this.onError(x);
-      }
-    );
+//   constructor(initialValue?: T, scheduler?: Scheduler) {
+//     this.currentValue = initialValue;
+//   }
 
-    this.sourceObservable = source
-      .startWith(initialValue)
-      .distinctUntilChanged()
-      .multicast(this.sourceSubject);
-  }
+//   protected onValueChanged(newValue: T) {
+//     if (this.currentValue !== newValue) {
+//       if (this.changingSubject != null) {
+//         this.changingSubject.next(newValue);
+//       }
 
-  protected onError(error: any) {
-    if (this.thrownErrorsSubject == null) {
-      if (DEBUG) {
-        // TODO: abstract logging
-        console.log('Uncaught Error');
-        console.log(error);
-      }
-    } else {
-      this.thrownErrorsSubject.next(error);
-    }
-  }
+//       this.currentValue = newValue;
 
-  get value() {
-    this.connect();
+//       if (this.changedSubject != null) {
+//         this.changedSubject.next(newValue);
+//       }
+//     }
+//   }
 
-    return this.currentValue;
-  }
+//   get value() {
+//     return this.currentValue;
+//   }
 
-  set value(_: any) {
-    throw new Error('Property is Read Only');
-  }
+//   set value(value: T) {
+//     this.onValueChanged(value);
+//   }
 
-  get source() {
-    return this.sourceSubject
-      .asObservable();
-  }
+//   get changing() {
+//     if (this.changingSubject == null) {
+//       this.changingSubject = new Subject<T>();
+//     }
 
-  get thrownErrors() {
-    if (this.thrownErrorsSubject == null) {
-      this.thrownErrorsSubject = new Subject<any>();
-    }
+//     return this.changingSubject
+//       .asObservable();
+//   }
 
-    return this.thrownErrorsSubject;
-  }
+//   get changed() {
+//     if (this.changedSubject == null) {
+//       this.changedSubject = new Subject<T>();
+//     }
 
-  connect() {
-    if (this.sourceSubscription == null) {
-      this.sourceSubscription = this.sourceObservable.connect();
-    }
+//     return this.changedSubject
+//       .asObservable();
+//   }
+// }
 
-    return this.sourceSubscription;
-  }
+// export class ReactiveOutputProperty<T> extends ReactiveProperty<T> implements IReactiveOutputProperty<T> {
+//   protected sourceObservable: ConnectableObservable<T> = null;
+//   protected sourceSubject: Subject<T> = null;
+//   protected sourceSubscription: Subscription = null;
+//   protected thrownErrorsSubject: Subject<any> = null;
 
-  catchErrors(errorHandler: (error: any) => void) {
-    let sub = this.thrownErrors
-      .subscribe(errorHandler);
+//   constructor(source: Observable<T>, initialValue?: T, scheduler?: Scheduler) {
+//     super(initialValue);
 
-    this.connect().add(sub);
+//     if (source == null) {
+//       throw new Error('Invalid Source Observable');
+//     }
 
-    return this;
-  }
+//     this.sourceSubject = new Subject<T>();
 
-  unsubscribe() {
-    if (this.sourceSubscription != null) {
-      this.sourceSubscription.unsubscribe();
+//     this.sourceSubject.subscribe(
+//       x => {
+//         this.onValueChanged(x);
+//       }, x => {
+//         this.onError(x);
+//       }
+//     );
 
-      this.sourceSubscription = null;
-    }
-  }
-}
+//     this.sourceObservable = source
+//       .startWith(initialValue)
+//       .distinctUntilChanged()
+//       .multicast(this.sourceSubject);
+//   }
+
+//   protected onError(error: any) {
+//     if (this.thrownErrorsSubject == null) {
+//       if (DEBUG) {
+//         // TODO: abstract logging
+//         console.log('Uncaught Error');
+//         console.log(error);
+//       }
+//     } else {
+//       this.thrownErrorsSubject.next(error);
+//     }
+//   }
+
+//   get value() {
+//     this.connect();
+
+//     return this.currentValue;
+//   }
+
+//   set value(_: any) {
+//     throw new Error('Property is Read Only');
+//   }
+
+//   get source() {
+//     return this.sourceSubject
+//       .asObservable();
+//   }
+
+//   get thrownErrors() {
+//     if (this.thrownErrorsSubject == null) {
+//       this.thrownErrorsSubject = new Subject<any>();
+//     }
+
+//     return this.thrownErrorsSubject;
+//   }
+
+//   connect() {
+//     if (this.sourceSubscription == null) {
+//       this.sourceSubscription = this.sourceObservable.connect();
+//     }
+
+//     return this.sourceSubscription;
+//   }
+
+//   catchErrors(errorHandler: (error: any) => void) {
+//     let sub = this.thrownErrors
+//       .subscribe(errorHandler);
+
+//     this.connect().add(sub);
+
+//     return this;
+//   }
+
+//   unsubscribe() {
+//     if (this.sourceSubscription != null) {
+//       this.sourceSubscription.unsubscribe();
+
+//       this.sourceSubscription = null;
+//     }
+//   }
+// }
