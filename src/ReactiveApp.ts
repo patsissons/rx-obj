@@ -2,6 +2,7 @@ import { Subscriber, Scheduler } from 'rxjs';
 
 export class ReactiveApp {
   public static defaultErrorHandler = Subscriber.create<Error>(err => {
+    console.error(err);
   });
 
   public static mainScheduler = ReactiveApp.createMainScheduler();

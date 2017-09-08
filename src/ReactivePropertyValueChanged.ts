@@ -1,6 +1,4 @@
-import { ReactiveObject } from './ReactiveObject';
-
-export class ReactivePropertyValueChanged<TSender extends ReactiveObject, TValue> {
+export class ReactivePropertyValueChanged<TSender, TValue> {
   constructor(sender: TSender, value: TValue) {
     this.state = {
       sender,

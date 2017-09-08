@@ -1,72 +1,98 @@
-import { Observable, Subject, Scheduler, Subscription } from 'rxjs';
+import { Observable, Subject, Scheduler as Schedulers, Subscription } from 'rxjs';
+import { Scheduler } from 'rxjs/Scheduler';
 
-// import { ReactiveApp } from './ReactiveApp';
-import { ReactiveObject } from './ReactiveObject';
-// import { ScheduledSubject } from './ScheduledSubject';
-// import { ReactivePropertyValueChanged } from './ReactivePropertyValueChanged';
+import { Unit } from './Unit';
+import { ReactiveApp } from './ReactiveApp';
+import { ScheduledSubject } from './ScheduledSubject';
 
-export class ReactiveProperty<TSender extends ReactiveObject, TValue> extends Subscription {
-  // constructor(protected sender: TSender, initialValue?: TValue, scheduler = Scheduler.queue) {
-  //   super();
+class ReactivePropertyBase<T> extends Subscription {
+  constructor(initialValue?: T) {
+    super();
 
-  //   // this.valueSubject = new ScheduledSubject<TValue>(scheduler);
+    this.lastValue = initialValue;
+  }
 
-  //   // this.valueSubject
-  //   //   .asObservable()
-  //   //   .distinctUntilChanged()
-  //   //   .subscribe(x => {
-  //   //     this.changingSubject.next(new ReactivePropertyValueChanged(this.sender, this._lastValue));
-  //   //     // this.sender.raisePropertyChanging();
+  private lastValue: T;
 
-  //   //     this._lastValue = x;
+  protected changingSubject = new Subject<T>();
+  protected changedSubject = new Subject<T>();
+  protected thrownErrorsSubject = new ScheduledSubject<Error>(Schedulers.queue, ReactiveApp.defaultErrorHandler);
 
-  //   //     this.changedSubject.next(new ReactivePropertyValueChanged(this.sender, x));
-  //   //     // this.sender.raisePropertyChanged();
-  //   //   }, this.thrownErrorsSubject.next);
+  protected initialize(source: Observable<T>) {
+    source
+      .distinctUntilChanged()
+      .subscribe(x => {
+        this.changingSubject.next(this.lastValue);
+        this.lastValue = x;
+        this.changedSubject.next(x);
+      }, this.thrownErrorsSubject.next);
 
-  //   // this._lastValue = initialValue;
-
-  //   // this.add(this.valueSubject);
-  //   // this.add(this.changingSubject);
-  //   // this.add(this.changedSubject);
-  //   // this.add(this.thrownErrorsSubject);
-  // }
-
-  // private _lastValue: TValue;
-
-  // protected valueSubject: ScheduledSubject<TValue>;
-
-  // protected changingSubject = new Subject<ReactivePropertyValueChanged<TSender, TValue>>();
-  // protected changedSubject = new Subject<ReactivePropertyValueChanged<TSender, TValue>>();
-  // protected thrownErrorsSubject = new ScheduledSubject<Error>(Scheduler.queue, ReactiveApp.DefaultErrorHandler);
+    this.add(this.changingSubject);
+    this.add(this.changedSubject);
+    this.add(this.thrownErrorsSubject);
+  }
 
   // private changedObservable = this.changedSubject
-  //   .buffer(Observable.merge(
-  //     this.changedSubject
-  //       .filter(_ => this.areChangeNotificationsDelayed() === false)
-  //       .map(_ => Unit.Default), this.startDelayNotificationsSubject)
+  //   .buffer(
+  //     Observable
+  //       .merge(
+  //         this.changedSubject
+  //           .filter(() => this.areChangeNotificationsDelayed() === false)
+  //           .map(() => Unit.default),
+  //         this.startDelayNotificationsSubject
+  //       )
   //   )
   //   .mergeMap(batch => <any>dedup(batch))
   //   .publish()
   //   .refCount();
 
   // private changingObservable = this.changingSubject
-  //   .buffer(Observable.merge(
-  //     this.changingSubject
-  //       .filter(_ => this.areChangeNotificationsDelayed() === false)
-  //       .map(_ => Unit.Default), this.startDelayNotificationsSubject)
+  //   .buffer(
+  //     Observable
+  //       .merge(
+  //         this.changingSubject
+  //           .filter(() => this.areChangeNotificationsDelayed() === false)
+  //           .map(_ => Unit.default),
+  //         this.startDelayNotificationsSubject
+  //       )
   //   )
   //   .mergeMap(batch => <any>dedup(batch))
   //   .publish()
   //   .refCount();
 
-  // public get value() {
-  //   return this._lastValue;
-  // }
+  public get value() {
+    return this.lastValue;
+  }
+}
 
-  // public set value(value: TValue) {
-  //   this.valueSubject.next(value);
-  // }
+export class ReactiveProperty<T> extends ReactivePropertyBase<T> {
+  constructor(initialValue?: T, scheduler = Schedulers.queue) {
+    super(initialValue);
+
+    this.valueSubject = new ScheduledSubject<T>(scheduler);
+
+    this.add(this.valueSubject);
+
+    this.initialize(this.valueSubject);
+  }
+
+  protected valueSubject: ScheduledSubject<T>;
+
+  public set value(value: T) {
+    this.valueSubject.next(value);
+  }
+}
+
+export class ReactiveOutputProperty<T> extends ReactivePropertyBase<T> {
+  constructor(source: Observable<T>, initialValue?: T) {
+    super(initialValue);
+
+    if (source == undefined) {
+      throw new Error('Invalid Source Observable');
+    }
+
+    this.initialize(initialValue == undefined ? source : source.startWith(initialValue));
+  }
 }
 
 // 'use strict';

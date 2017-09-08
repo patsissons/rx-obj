@@ -5,7 +5,7 @@ import { ReactiveProperty } from './ReactiveProperty';
 import { ReactivePropertyValueChanged } from './ReactivePropertyValueChanged';
 import { ReactiveState } from './ReactiveState';
 
-export class ReactivePropertyState<TSender extends ReactiveObject, TValue> extends ReactiveState<TSender, ReactivePropertyValueChanged<TSender, TValue>> {
+export class ReactivePropertyState<T> extends ReactiveState<TSender, ReactivePropertyValueChanged<TSender, TValue>> {
   constructor(protected sender: TSender, protected property: ReactiveProperty<TSender, TValue>, protected source: Observable<TValue>, initialValue?: TValue, scheduler = Scheduler.queue) {
     super(sender, Scheduler.queue);
 
@@ -24,7 +24,7 @@ export class ReactivePropertyState<TSender extends ReactiveObject, TValue> exten
     this.lastValue = initialValue;
   }
 
-  private lastValue: TValue;
+  private lastValue: T;
 
   get value() {
     return this.lastValue;
